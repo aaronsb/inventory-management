@@ -54,6 +54,16 @@ export const api = {
     return response.data
   },
 
+  async getReportsQuarterly() {
+    const response = await axios.get(`${API_BASE_URL}/reports/quarterly`)
+    return response.data
+  },
+
+  async getReportsMonthly() {
+    const response = await axios.get(`${API_BASE_URL}/reports/monthly-trends`)
+    return response.data
+  },
+
   async getSpendingSummary() {
     const response = await axios.get(`${API_BASE_URL}/spending/summary`)
     return response.data
