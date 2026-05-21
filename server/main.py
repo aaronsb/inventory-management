@@ -304,6 +304,124 @@ def get_monthly_trends():
     result.sort(key=lambda x: x['month'])
     return result
 
+# --- Restocking (Step 6 feature) ----------------------------------------
+
+class RestockingRecommendation(BaseModel):
+    sku: str
+    name: str
+    category: str
+    current_demand: int
+    forecasted_demand: int
+    shortfall: int
+    unit_cost: float
+    recommended_qty: int
+    line_total: float
+    trend: str
+
+class SubmittedOrderItem(BaseModel):
+    sku: str
+    name: str
+    qty: int
+    unit_cost: float
+    line_total: float
+
+class SubmittedOrder(BaseModel):
+    id: str
+    submitted_at: str
+    budget: float
+    total: float
+    lead_time_days: int
+    status: str
+    items: List[SubmittedOrderItem]
+
+submitted_orders: list[dict] = []
+
+@app.get("/api/restocking/recommendations", response_model=List[RestockingRecommendation])
+def get_restocking_recommendations(budget: float = 0):
+    """Recommend SKUs to restock given a budget, packed by shortfall priority.
+
+    Greedy by largest unmet demand first; quantities clamp to whatever the
+    remaining budget can afford. Items with no shortfall are skipped.
+    """
+    inv_by_sku = {item["sku"]: item for item in inventory_items}
+    # Fallback unit cost when the forecast SKU isn't carried in inventory yet
+    # (common during product introduction). Uses the mean inventory cost so
+    # budgets still produce useful recommendations.
+    fallback_cost = (
+        sum(i.get("unit_cost", 0) for i in inventory_items) / max(1, len(inventory_items))
+    )
+    rows: list[dict] = []
+    for f in demand_forecasts:
+        sku = f.get("item_sku")
+        inv = inv_by_sku.get(sku)
+        shortfall = max(0, f.get("forecasted_demand", 0) - f.get("current_demand", 0))
+        if shortfall == 0:
+            continue
+        rows.append({
+            "sku": sku,
+            "name": f.get("item_name", (inv or {}).get("name", sku)),
+            "category": (inv or {}).get("category", "Forecasted"),
+            "current_demand": f.get("current_demand", 0),
+            "forecasted_demand": f.get("forecasted_demand", 0),
+            "shortfall": shortfall,
+            "unit_cost": round((inv or {}).get("unit_cost", fallback_cost), 2),
+            "trend": f.get("trend", "stable"),
+        })
+
+    rows.sort(key=lambda r: r["shortfall"], reverse=True)
+
+    remaining = max(0.0, float(budget))
+    recommendations: list[dict] = []
+    for r in rows:
+        cost = r["unit_cost"]
+        if cost <= 0:
+            continue
+        affordable_qty = int(remaining // cost)
+        qty = min(r["shortfall"], affordable_qty)
+        if qty <= 0:
+            continue
+        line_total = qty * cost
+        remaining -= line_total
+        recommendations.append({
+            **r,
+            "recommended_qty": qty,
+            "line_total": round(line_total, 2),
+        })
+
+    return recommendations
+
+class SubmittedOrderRequest(BaseModel):
+    budget: float
+    items: List[SubmittedOrderItem]
+
+@app.post("/api/restocking/orders", response_model=SubmittedOrder, status_code=201)
+def create_submitted_order(payload: SubmittedOrderRequest):
+    """Submit a restocking order. Lead time is derived from the line count
+    so it varies between orders without needing a real supplier model."""
+    if not payload.items:
+        raise HTTPException(status_code=400, detail="At least one item required")
+    from datetime import datetime
+    total = round(sum(i.line_total for i in payload.items), 2)
+    # 7-day base + 1 day per distinct SKU, capped at 21
+    lead_time = min(21, 7 + len(payload.items))
+    order = {
+        "id": f"SO-{len(submitted_orders) + 1:04d}",
+        "submitted_at": datetime.utcnow().isoformat(timespec="seconds") + "Z",
+        "budget": round(payload.budget, 2),
+        "total": total,
+        "lead_time_days": lead_time,
+        "status": "Submitted",
+        "items": [i.model_dump() for i in payload.items],
+    }
+    submitted_orders.append(order)
+    return order
+
+@app.get("/api/restocking/orders", response_model=List[SubmittedOrder])
+def list_submitted_orders():
+    return list(reversed(submitted_orders))
+
+# ------------------------------------------------------------------------
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8001)

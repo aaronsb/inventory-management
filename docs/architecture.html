@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Inventory Management — Architecture Overview</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #1e293b;
+      --panel-2: #334155;
+      --text: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #f97316;
+      --green: #22c55e;
+      --blue: #3b82f6;
+      --yellow: #eab308;
+      --red: #ef4444;
+      --border: #475569;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    header {
+      padding: 32px 48px;
+      border-bottom: 1px solid var(--border);
+    }
+    h1 { margin: 0 0 8px; font-size: 28px; font-weight: 600; }
+    h2 { margin: 32px 0 12px; font-size: 18px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 600; }
+    h3 { margin: 0 0 8px; font-size: 14px; color: var(--accent); font-weight: 600; }
+    .subtitle { color: var(--muted); margin: 0; font-size: 14px; }
+    main { padding: 24px 48px 64px; max-width: 1280px; }
+    .flow {
+      display: grid;
+      grid-template-columns: 1fr 80px 1fr 80px 1fr;
+      align-items: stretch;
+      gap: 0;
+      margin: 32px 0;
+    }
+    .layer {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px;
+    }
+    .layer.client { border-top: 3px solid var(--green); }
+    .layer.api { border-top: 3px solid var(--blue); }
+    .layer.data { border-top: 3px solid var(--yellow); }
+    .layer ul { margin: 8px 0 0; padding-left: 18px; font-size: 13px; color: var(--muted); }
+    .layer li { margin: 4px 0; }
+    .layer code {
+      background: var(--panel-2);
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 12px;
+      color: var(--text);
+    }
+    .arrow {
+      align-self: center;
+      text-align: center;
+      color: var(--accent);
+      font-size: 13px;
+    }
+    .arrow .head { font-size: 24px; line-height: 1; }
+    .arrow .label { display: block; margin-top: 4px; }
+    .stack {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .stack-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .stack-card strong { color: var(--text); font-size: 14px; }
+    .stack-card .tech { color: var(--muted); font-size: 13px; margin-top: 4px; }
+    .endpoints {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0;
+      overflow: hidden;
+    }
+    .endpoints table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .endpoints th, .endpoints td {
+      padding: 10px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .endpoints th { color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; font-size: 11px; }
+    .endpoints td:first-child { font-family: SFMono-Regular, Menlo, monospace; color: var(--green); }
+    .endpoints td:last-child { color: var(--muted); }
+    .endpoints tr:last-child td { border-bottom: 0; }
+    .bug-bar {
+      background: rgba(239, 68, 68, 0.08);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 8px;
+      padding: 16px 20px;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+    .bug-bar strong { color: var(--red); }
+    .bug-bar ul { margin: 8px 0 0; padding-left: 20px; }
+    .filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .pill {
+      background: var(--panel-2);
+      color: var(--text);
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+    }
+    footer { padding: 24px 48px; color: var(--muted); font-size: 12px; border-top: 1px solid var(--border); }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Factory Inventory Management — System Architecture</h1>
+  <p class="subtitle">Vue 3 + Vite client · FastAPI server · JSON-file data layer · in-memory filtering</p>
+</header>
+
+<main>
+
+  <h2>Request flow</h2>
+  <div class="flow">
+    <div class="layer client">
+      <h3>BROWSER</h3>
+      <strong>Vue 3 SPA</strong>
+      <ul>
+        <li>7 views: Dashboard, Inventory, Orders, Spending (rendered as "Finance"), Demand, Reports, <em>Backlog</em></li>
+        <li>Composition API + <code>&lt;script setup&gt;</code></li>
+        <li>Global filter bar applies to all data via query params</li>
+        <li>i18n via <code>t()</code> from <code>locales/</code></li>
+        <li>Served by Vite on <code>:3000</code></li>
+      </ul>
+      <div class="filters">
+        <span class="pill">Time Period</span>
+        <span class="pill">Warehouse</span>
+        <span class="pill">Category</span>
+        <span class="pill">Order Status</span>
+      </div>
+    </div>
+    <div class="arrow">
+      <div class="head">→</div>
+      <span class="label">HTTP<br>axios<br><code>api.js</code></span>
+    </div>
+    <div class="layer api">
+      <h3>API</h3>
+      <strong>FastAPI on <code>:8001</code></strong>
+      <ul>
+        <li>14 endpoints across 6 resources</li>
+        <li>Pydantic models validate the response shape</li>
+        <li><code>apply_filters()</code> + <code>filter_by_month()</code> handle the global filter bar in-memory</li>
+        <li>CORS open to all origins (demo)</li>
+      </ul>
+    </div>
+    <div class="arrow">
+      <div class="head">→</div>
+      <span class="label">in-process<br>read</span>
+    </div>
+    <div class="layer data">
+      <h3>DATA</h3>
+      <strong>JSON files (in-memory)</strong>
+      <ul>
+        <li><code>inventory.json</code></li>
+        <li><code>orders.json</code></li>
+        <li><code>purchase_orders.json</code></li>
+        <li><code>demand_forecasts.json</code></li>
+        <li><code>backlog_items.json</code></li>
+        <li><code>spending.json</code> · <code>transactions.json</code></li>
+        <li>Loaded once by <code>mock_data.py</code> at startup</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Tech stack</h2>
+  <div class="stack">
+    <div class="stack-card">
+      <strong>Frontend</strong>
+      <div class="tech">
+        Vue 3 · Composition API · Vite 5 · vue-router · axios · vue-i18n · custom SVG charts
+      </div>
+    </div>
+    <div class="stack-card">
+      <strong>Backend</strong>
+      <div class="tech">
+        Python 3.14 · FastAPI · Pydantic · Uvicorn · uv for env mgmt
+      </div>
+    </div>
+    <div class="stack-card">
+      <strong>Tooling</strong>
+      <div class="tech">
+        Playwright MCP (browser tests) · GitHub MCP · pytest + FastAPI TestClient · npm scripts for client
+      </div>
+    </div>
+  </div>
+
+  <h2>API surface (server/main.py)</h2>
+  <div class="endpoints">
+    <table>
+      <thead><tr><th>Endpoint</th><th>Filters supported</th></tr></thead>
+      <tbody>
+        <tr><td>GET /api/inventory</td><td>warehouse, category</td></tr>
+        <tr><td>GET /api/inventory/{id}</td><td>—</td></tr>
+        <tr><td>GET /api/orders</td><td>warehouse, category, status, month</td></tr>
+        <tr><td>GET /api/orders/{id}</td><td>—</td></tr>
+        <tr><td>GET /api/dashboard/summary</td><td>all four</td></tr>
+        <tr><td>GET /api/demand</td><td>—</td></tr>
+        <tr><td>GET /api/backlog</td><td>—</td></tr>
+        <tr><td>GET /api/spending/summary</td><td>warehouse, category, month</td></tr>
+        <tr><td>GET /api/spending/monthly</td><td>warehouse, category</td></tr>
+        <tr><td>GET /api/spending/categories</td><td>warehouse, month</td></tr>
+        <tr><td>GET /api/spending/transactions</td><td>warehouse, category, month</td></tr>
+        <tr><td>GET /api/reports/quarterly</td><td>—</td></tr>
+        <tr><td>GET /api/reports/monthly-trends</td><td>—</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Known shape issues (planted for the workshop)</h2>
+  <div class="bug-bar">
+    <strong>Reports tab (Reports.vue)</strong>
+    <ul>
+      <li>Nav label hardcoded as <code>Reports</code> in App.vue — every other tab uses <code>t('nav.x')</code></li>
+      <li>Page does not respond to the global filter bar</li>
+      <li>Suspected <code>console.log</code> debug noise</li>
+      <li>Likely missing i18n call sites in the page body</li>
+    </ul>
+  </div>
+  <div class="bug-bar" style="background: rgba(234, 179, 8, 0.08); border-color: rgba(234, 179, 8, 0.3);">
+    <strong style="color: var(--yellow);">Backlog tab</strong>
+    <ul>
+      <li>Backlog.vue exists and the API endpoint serves it, but there is no <code>&lt;router-link to="/backlog"&gt;</code> in App.vue's nav</li>
+      <li>Strings are likely hardcoded in English (stretch goal in Bug Bounty)</li>
+    </ul>
+  </div>
+
+</main>
+
+<footer>
+  Generated for the Claude Code Workshop · branch <code>new_features</code> · backend :8001 · client :3000
+</footer>
+
+</body>
+</html>

@@ -6,8 +6,35 @@ export default {
     orders: 'Orders',
     finance: 'Finance',
     demandForecast: 'Demand Forecast',
+    restocking: 'Restocking',
     companyName: 'Catalyst Components',
     subtitle: 'Inventory Management System'
+  },
+
+  // Restocking (Step 6 feature)
+  restocking: {
+    title: 'Budget-Based Restocking',
+    subtitle: 'Set a budget and we recommend SKUs to restock based on the demand forecast.',
+    budget: 'Available budget',
+    items: 'Items',
+    totalCost: 'Total cost',
+    remaining: 'Remaining',
+    placeOrder: 'Place order',
+    submittedAs: 'Order submitted as',
+    leadTime: 'Lead time',
+    days: 'days',
+    noRecommendations: 'No restocking needed at this budget — raise the slider to see recommendations.',
+    col: {
+      sku: 'SKU',
+      name: 'Item',
+      category: 'Category',
+      current: 'Current demand',
+      forecast: 'Forecast',
+      shortfall: 'Shortfall',
+      qty: 'Qty to order',
+      unitCost: 'Unit cost',
+      lineTotal: 'Line total'
+    }
   },
 
   // Dashboard
@@ -126,6 +153,19 @@ export default {
       status: 'Status',
       expectedDelivery: 'Expected Delivery',
       actualDelivery: 'Actual Delivery'
+    },
+    submitted: {
+      title: 'Submitted Restocking Orders',
+      none: 'No restocking orders submitted yet. Use the Restocking page to place one.',
+      daysToDeliver: '{days} days',
+      table: {
+        id: 'Order ID',
+        submittedAt: 'Submitted',
+        items: 'Items',
+        total: 'Total',
+        leadTime: 'Lead Time',
+        status: 'Status'
+      }
     }
   },
 
@@ -204,6 +244,7 @@ export default {
     shipped: 'Shipped',
     processing: 'Processing',
     backordered: 'Backordered',
+    submitted: 'Submitted',
     inStock: 'In Stock',
     lowStock: 'Low Stock',
     adequate: 'Adequate'
