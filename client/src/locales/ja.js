@@ -6,8 +6,94 @@ export default {
     orders: '注文',
     finance: '財務',
     demandForecast: '需要予測',
+    restocking: '補充発注',
+    reports: 'レポート',
+    backlog: 'バックログ',
     companyName: '触媒コンポーネンツ',
     subtitle: '在庫管理システム'
+  },
+
+  // Reports
+  reports: {
+    title: 'パフォーマンスレポート',
+    description: '四半期別実績指標と月別トレンドを確認',
+    quarterlyPerformance: '四半期別実績',
+    monthlyTrend: '月別収益トレンド',
+    momAnalysis: '前月比分析',
+    totalRevenueYTD: '総収益（年初来）',
+    avgMonthlyRevenue: '月平均収益',
+    totalOrdersYTD: '総注文数（年初来）',
+    bestQuarter: '最優秀四半期',
+    table: {
+      quarter: '四半期',
+      totalOrders: '総注文数',
+      totalRevenue: '総収益',
+      avgOrderValue: '平均注文額',
+      fulfillmentRate: '履行率',
+      month: '月',
+      orders: '注文数',
+      revenue: '収益',
+      change: '変化',
+      growthRate: '成長率'
+    },
+    errors: {
+      failedToLoad: 'レポートの読み込みに失敗しました'
+    }
+  },
+
+  // Backlog
+  backlog: {
+    title: 'バックログ管理',
+    description: '在庫不足の追跡と解決',
+    stats: {
+      highPriority: '高優先度',
+      mediumPriority: '中優先度',
+      lowPriority: '低優先度',
+      total: '総バックログ件数'
+    },
+    allBacklog: 'バックログ品目',
+    empty: 'バックログ品目なし - すべての注文を履行できます！',
+    unitsShort: '単位不足',
+    days: '日',
+    table: {
+      orderId: '注文ID',
+      sku: 'SKU',
+      itemName: '品目名',
+      quantityNeeded: '必要数量',
+      quantityAvailable: '在庫数量',
+      shortage: '不足',
+      daysDelayed: '遅延日数',
+      priority: '優先度'
+    },
+    errors: {
+      failedToLoad: 'バックログの読み込みに失敗しました'
+    }
+  },
+
+  // Restocking (Step 6 feature)
+  restocking: {
+    title: '予算に基づく補充発注',
+    subtitle: '予算を設定すると、需要予測に基づいて補充すべきSKUを推奨します。',
+    budget: '利用可能な予算',
+    items: '品目数',
+    totalCost: '合計コスト',
+    remaining: '残額',
+    placeOrder: '発注する',
+    submittedAs: '発注番号',
+    leadTime: 'リードタイム',
+    days: '日',
+    noRecommendations: 'この予算では補充は不要です — スライダーを上げて推奨を確認してください。',
+    col: {
+      sku: 'SKU',
+      name: '品目',
+      category: 'カテゴリー',
+      current: '現需要',
+      forecast: '予測',
+      shortfall: '不足分',
+      qty: '発注数量',
+      unitCost: '単価',
+      lineTotal: '行合計'
+    }
   },
 
   // Dashboard
@@ -126,6 +212,19 @@ export default {
       status: 'ステータス',
       expectedDelivery: '予定配達日',
       actualDelivery: '実際の配達日'
+    },
+    submitted: {
+      title: '提出済み補充発注',
+      none: 'まだ提出された補充発注はありません。補充発注ページから発注してください。',
+      daysToDeliver: '{days}日',
+      table: {
+        id: '発注ID',
+        submittedAt: '提出日',
+        items: '品目',
+        total: '合計',
+        leadTime: 'リードタイム',
+        status: 'ステータス'
+      }
     }
   },
 
@@ -204,6 +303,7 @@ export default {
     shipped: '出荷済み',
     processing: '処理中',
     backordered: 'バックオーダー',
+    submitted: '提出済み',
     inStock: '在庫あり',
     lowStock: '在庫僅少',
     adequate: '適量'

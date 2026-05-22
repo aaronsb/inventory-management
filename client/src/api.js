@@ -54,6 +54,16 @@ export const api = {
     return response.data
   },
 
+  async getReportsQuarterly() {
+    const response = await axios.get(`${API_BASE_URL}/reports/quarterly`)
+    return response.data
+  },
+
+  async getReportsMonthly() {
+    const response = await axios.get(`${API_BASE_URL}/reports/monthly-trends`)
+    return response.data
+  },
+
   async getSpendingSummary() {
     const response = await axios.get(`${API_BASE_URL}/spending/summary`)
     return response.data
@@ -101,6 +111,23 @@ export const api = {
 
   async getPurchaseOrderByBacklogItem(backlogItemId) {
     const response = await axios.get(`${API_BASE_URL}/purchase-orders/${backlogItemId}`)
+    return response.data
+  },
+
+  async getRestockingRecommendations(budget) {
+    const response = await axios.get(`${API_BASE_URL}/restocking/recommendations`, {
+      params: { budget }
+    })
+    return response.data
+  },
+
+  async submitRestockingOrder(payload) {
+    const response = await axios.post(`${API_BASE_URL}/restocking/orders`, payload)
+    return response.data
+  },
+
+  async getSubmittedOrders() {
+    const response = await axios.get(`${API_BASE_URL}/restocking/orders`)
     return response.data
   }
 }

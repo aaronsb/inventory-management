@@ -72,3 +72,12 @@ npm install && npm run dev
 - Status: green/blue/yellow/red
 - Charts: Custom SVG, CSS Grid for layouts
 - No emojis in UI
+
+## Code Hygiene
+- Always document non-obvious logic changes with comments — explain the
+  *why*, not the *what*. Identifier names should already cover the what.
+- Match the existing Composition API + `<script setup>` pattern in
+  `client/src/views/*.vue` when adding new views. Don't introduce
+  Options API.
+- Reports.vue is a known-bad reference (planted bugs). Use Dashboard.vue
+  or Orders.vue as the template for new views.
